@@ -1,0 +1,74 @@
+[tool.poetry]
+name = "moe_transcode"
+version = "0.1.0"
+description = "Plugin for Moe to transcode music."
+authors = ["Jacob Pavlock <jtpavlock@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.11"
+moe = {git = "https://github.com/MoeMusic/Moe.git"}
+
+[tool.poetry.group.test.dependencies]
+debugpy = "^1.4.1"
+pytest = "^6.0.1"
+pytest-cov = "^2.10.0"
+
+[tool.poetry.group.lint.dependencies]
+black = "^22.6.0"
+commitizen = "^2.17.12"
+darglint = "^1.8.1"
+flake8 = "^5.0.4"
+flake8-alphabetize = "^0.0.17"
+flake8-bugbear = "^22.7.1"
+flake8-comprehensions = "^3.10.0"
+flake8-docstrings = "^1.5.0"
+flake8-pytest-style = "^1.6.0"
+flake8-use-fstring = "^1.1"
+"github3.py" = "^3.2.0"
+isort = "^5.10.1"
+mccabe = "^0.7.0"
+pre-commit = "^2.6.0"
+pyright = "^1.1.267"
+
+[tool.poetry.group.docs.dependencies]
+pypandoc = "^1.9"
+Sphinx = "^5.2.3"
+
+[tool.poetry.plugins."moe.plugins"]
+"transcode" = "transcode"
+
+[tool.commitizen]
+name = "cz_customize"
+version = "1.2.0"
+version_files = [
+    "pyproject.toml:^version",
+]
+tag_format = "v$version"
+
+[tool.commitizen.customize]
+schema_pattern = '(build|ci|deprecate|docs|feat|fix|perf|refactor|release|style|test)(\(\w+\))?!?:\s\S.*'
+
+[tool.isort]
+profile = 'black'
+
+[tool.pytest.ini_options]
+log_cli_level = 10
+addopts = "--color=yes"
+markers = [
+    "network: tests that make network calls",
+    "darwin: tests that should only run on apple",
+    "linux: tests that should only run on linux",
+    "win32: tests that should only run on windows"
+]
+
+[tool.pyright]
+exclude = [
+    "alembic",
+]
+pythonPlatform = "All"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
