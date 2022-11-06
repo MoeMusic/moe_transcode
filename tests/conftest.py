@@ -1,5 +1,6 @@
 """Shared pytest configuration."""
 import datetime
+import importlib
 import random
 import shutil
 import sys
@@ -12,7 +13,6 @@ import pytest
 import sqlalchemy as sa
 import sqlalchemy.exc
 import sqlalchemy.orm
-
 from moe import config
 from moe.config import Config, ExtraPlugin, MoeSession, session_factory
 from moe.library import Album, Extra, Track
@@ -22,6 +22,7 @@ __all__ = ["album_factory", "extra_factory", "track_factory"]
 
 RESOURCE_DIR = Path(__file__).parent / "resources"
 EMPTY_MP3_FILE = RESOURCE_DIR / "empty.mp3"
+EMPTY_FLAC_FILE = RESOURCE_DIR / "empty.flac"
 SUPPORTED_PLATFORMS = {"darwin", "linux", "win32"}
 
 
@@ -105,13 +106,21 @@ def tmp_config(
         else:
             engine = None
 
-        return Config(
+        if not extra_plugins:
+            extra_plugins = []
+        extra_plugins.append(
+            ExtraPlugin(importlib.import_module("moe_transcode"), "transcode")
+        )
+
+        config = Config(
             config_dir=config_dir,
             settings_filename="config.toml",
             extra_plugins=extra_plugins,
             engine=engine,
             init_db=init_db,
         )
+
+        return config
 
     yield _tmp_config
     session_factory.configure(bind=None)  # reset the database in between tests
@@ -151,6 +160,7 @@ def track_factory(
     album: Optional[Album] = None,
     exists: bool = False,
     dup_track: Optional[Track] = None,
+    audio_format: str = "mp3",
     custom_fields: Optional[dict[str, Any]] = None,
     **kwargs,
 ):
@@ -162,6 +172,7 @@ def track_factory(
             requires the write plugin.
         dup_track: If given, the new track created will be a duplicate of `dup_track`.
         custom_fields: Dict of custom_fields to values to assign to the track.
+        audio_format: Audio format of the track.
         **kwargs: Any other fields to assign to the Track.
 
     Returns:
@@ -178,7 +189,7 @@ def track_factory(
     else:
         disc_dir = ""
     path = kwargs.pop(
-        "path", album.path / disc_dir / f"{disc}.{track_num} - {title}.mp3"
+        "path", album.path / disc_dir / f"{disc}.{track_num} - {title}.{audio_format}"
     )
 
     track = Track(
@@ -187,7 +198,6 @@ def track_factory(
         title=title,
         track_num=track_num,
         disc=disc,
-        audio_format=kwargs.pop("audio_format", "mp3"),
         **kwargs,
     )
 
@@ -199,8 +209,6 @@ def track_factory(
     if dup_track:
         for field in dup_track.fields:
             value = getattr(dup_track, field)
-            if field == "genre":
-                print(value)
             try:
                 setattr(track, field, value)
             except AttributeError:
@@ -209,7 +217,10 @@ def track_factory(
 
     if exists:
         track.path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(EMPTY_MP3_FILE, track.path)
+        if audio_format == "flac":
+            shutil.copyfile(EMPTY_FLAC_FILE, track.path)
+        else:
+            shutil.copyfile(EMPTY_MP3_FILE, track.path)
         moe_write.write_tags(track)
 
     return track
@@ -267,6 +278,7 @@ def album_factory(
     num_discs: int = 1,
     exists: bool = False,
     dup_album: Optional[Album] = None,
+    audio_format: str = "mp3",
     custom_fields: Optional[dict[str, Any]] = None,
     **kwargs,
 ) -> Album:
@@ -279,6 +291,7 @@ def album_factory(
         exists: Whether the album should exist on the filesystem. Note, this option
             requires the write plugin.
         dup_album: If given, the new album created will be a duplicate of `dup_album`.
+        audio_format: Audio format of the tracks in the album.
         custom_fields: Dict of custom_fields to values to assign to the album.
         **kwargs: Any other fields to assign to the album.
 
@@ -350,6 +363,7 @@ def album_factory(
                 exists=exists,
                 track_num=track_num,
                 disc=disc,
+                audio_format=audio_format,
             )
 
     for _ in range(1, num_extras):

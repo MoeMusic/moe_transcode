@@ -1,1 +1,1 @@
-#!/usr/bin/env python3
+"""Transcode plugin for transcoding music."""
