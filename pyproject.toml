@@ -4,11 +4,11 @@ version = "0.1.0"
 description = "Plugin for Moe to transcode music."
 authors = ["Jacob Pavlock <jtpavlock@gmail.com>"]
 license = "MIT"
-readme = "README.md"
+readme = "README.rst"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.11"
-moe = {git = "https://github.com/MoeMusic/Moe.git"}
+python = ">=3.9,<3.12"
+moe = "^1.5.1"
 
 [tool.poetry.group.test.dependencies]
 debugpy = "^1.4.1"
@@ -37,7 +37,7 @@ pypandoc = "^1.9"
 Sphinx = "^5.2.3"
 
 [tool.poetry.plugins."moe.plugins"]
-"transcode" = "transcode"
+"transcode" = "moe_transcode"
 
 [tool.commitizen]
 name = "cz_customize"
