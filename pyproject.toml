@@ -3,6 +3,7 @@ name = "moe_transcode"
 version = "0.1.1"
 description = "Plugin for Moe to transcode music."
 authors = ["Jacob Pavlock <jtpavlock@gmail.com>"]
+documentation = "https://moe-transcode.readthedocs.io/en/latest/"
 license = "MIT"
 readme = "README.rst"
 

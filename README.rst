@@ -24,3 +24,9 @@ Installation
 Configuration
 *************
 Add ``transcode`` to the ``enabled_plugins`` configuration option.
+
+***
+API
+***
+
+The API docs can be found `here <https://moe-transcode.readthedocs.io/en/latest/>`_
