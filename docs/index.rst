@@ -25,6 +25,11 @@ Configuration
 *************
 Add ``transcode`` to the ``enabled_plugins`` configuration option.
 
+This plugin has the following configuration options:
+
+``transcode_path = {library_path}/transcode``
+    The default path for transcoded files.
+
 ***
 API
 ***
