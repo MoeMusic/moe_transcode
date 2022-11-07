@@ -5,10 +5,7 @@ list see the documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
-import os
-import sys
-
-import pkg_resources
+import importlib.metadata
 
 # -- Path setup --------------------------------------------------------------
 
@@ -16,15 +13,13 @@ import pkg_resources
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-sys.path.insert(0, os.path.abspath((os.path.join("..", "..", "moe_transcode"))))
-
 
 # -- Project information -----------------------------------------------------
 
-project = "Moe"
-copyright = "2021, Jacob Pavlock"
+project = "moe_transcode"
+copyright = "2022, Jacob Pavlock"
 author = "Jacob Pavlock"
-release = pkg_resources.get_distribution("moe").version
+release = importlib.metadata.version("moe_transcode")
 
 
 # -- General configuration ---------------------------------------------------
@@ -43,7 +38,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", ".venv"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", ".venv", "global.rst"]
 
 # include type hints in function description
 # autodoc_typehints = "description"
@@ -56,6 +51,7 @@ autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 2
 
 # -- Options for HTML output -------------------------------------------------
+html_theme = "furo"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
