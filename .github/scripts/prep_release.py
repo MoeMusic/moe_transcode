@@ -141,7 +141,7 @@ def prepare_release_pr(token: str) -> None:
     repo = login(token)
     repo.create_pull(
         f"Prepare release {new_version}",
-        base="master",
+        base="main",
         head=f"{release_branch}",
         body=PR_BODY,
     )
