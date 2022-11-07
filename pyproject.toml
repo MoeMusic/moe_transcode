@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "moe_transcode"
-version = "0.1.0"
+version = "0.2.0"
 description = "Plugin for Moe to transcode music."
 authors = ["Jacob Pavlock <jtpavlock@gmail.com>"]
 license = "MIT"
@@ -42,7 +42,7 @@ Sphinx = "^5.2.3"
 
 [tool.commitizen]
 name = "cz_customize"
-version = "0.1.0"
+version = "0.2.0"
 version_files = [
     "pyproject.toml:^version",
 ]
