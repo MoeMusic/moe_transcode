@@ -22,7 +22,7 @@ SLUG = "MoeMusic/moe_transcode"
 PR_BODY = """
 This pull request was created automatically by a manual trigger.
 
-Once this pull request is merged into master, it will be released on github and PyPI.
+Once this pull request is merged into main, it will be released on github and PyPI.
 """
 
 # Ordered in order to display
