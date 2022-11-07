@@ -18,7 +18,7 @@ import subprocess
 import github3
 from github3.repos import Repository
 
-SLUG = "MoeMusic/Moe"
+SLUG = "MoeMusic/moe_transcode"
 PR_BODY = """
 This pull request was created automatically by a manual trigger.
 
