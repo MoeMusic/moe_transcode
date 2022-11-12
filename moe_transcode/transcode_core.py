@@ -56,7 +56,7 @@ def transcode(
         ValueError: ``item`` contains a non-supported audio format.
     """
     out_path = out_path or fmt_item_path(
-        item, config.CONFIG.settings.transcode.transcode_path
+        item, Path(config.CONFIG.settings.transcode.transcode_path)
     )
     log.debug(f"Transcoding track. [track={item!r}, {to_format=!r}, {out_path=!r}]")
 
@@ -84,7 +84,7 @@ def _(
 ) -> Album:
     """Transcode an album."""
     out_path = out_path or fmt_item_path(
-        item, config.CONFIG.settings.transcode.transcode_path
+        item, Path(config.CONFIG.settings.transcode.transcode_path)
     )
     log.debug(f"Transcoding album. [album={item!r}, {to_format=!r}, {out_path=!r}]")
 
