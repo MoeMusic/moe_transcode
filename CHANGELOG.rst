@@ -4,6 +4,13 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v0.1.2 (2022-11-12)
+===================
+
+Bug Fixes
+---------
+* Convert config paths to pathlib paths (`48b1b92 <https://github.com/MoeMusic/moe_transcode/commit/48b1b9234178f73446684c1ad210872aca390b00>`_)
+
 v0.1.1 (2022-11-07)
 ===================
 
