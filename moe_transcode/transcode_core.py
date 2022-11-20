@@ -3,9 +3,8 @@
 import logging
 import shlex
 import subprocess
-from functools import singledispatch
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal, Optional, TypeVar
 
 import dynaconf
 import moe
@@ -13,7 +12,7 @@ from moe import config
 from moe.library import Album, Track
 from moe.plugins.move import fmt_item_path
 
-__all__ = ["TranscodeFormat", "transcode"]
+__all__ = ["I", "TranscodeFormat", "transcode"]
 
 log = logging.getLogger("moe.transcode")
 
@@ -36,10 +35,13 @@ def add_config_validator(settings: dynaconf.base.LazySettings):
     )
 
 
-@singledispatch
+I = TypeVar("I", Album, Track)
+"""Type hint representing either an Album or a Track."""
+
+
 def transcode(
-    item: Track, to_format: TranscodeFormat, out_path: Optional[Path] = None
-) -> Track:
+    item: I, to_format: TranscodeFormat, out_path: Optional[Path] = None
+) -> I:
     """Transcodes a track or album to a specific format.
 
     Args:
@@ -55,19 +57,74 @@ def transcode(
     Raises:
         ValueError: ``item`` contains a non-supported audio format.
     """
-    out_path = out_path or fmt_item_path(
-        item, Path(config.CONFIG.settings.transcode.transcode_path)
-    )
-    log.debug(f"Transcoding track. [track={item!r}, {to_format=!r}, {out_path=!r}]")
+    transcode_path = Path(config.CONFIG.settings.transcode.transcode_path).expanduser()
+    out_path = out_path or fmt_item_path(item, transcode_path)
 
-    if not item.audio_format == "flac":
-        raise ValueError(f"Track has unsupported audio format. [track={item!r}]")
+    if isinstance(item, Album):
+        return _transcode_album(item, to_format, out_path)
+    return _transcode_track(item, to_format, out_path)
+
+
+def _transcode_album(album: Album, to_format: TranscodeFormat, out_path: Path) -> Album:
+    """Transcodes an album to a specific format.
+
+    Args:
+        album: Album to transcode. Must contain flacs only.
+        to_format: Format to transcode to.
+        out_path: Path of the transcoded album. This defaults to the formatted path per
+            the configuration relative to the ``transcode_path`` setting.
+
+    Returns:
+        The transcoded album.
+
+    Raises:
+        ValueError: ``album`` contains a non-supported audio format.
+    """
+    log.debug(f"Transcoding album. [{album=!r}, {to_format=!r}, {out_path=!r}]")
+
+    for track in album.tracks:
+        if track.audio_format != "flac":
+            raise ValueError(
+                f"Album contains track with unsupported format. [{track=!r}]"
+            )
+
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    for track in album.tracks:
+        track_out_path = out_path / (track.path.stem + ".mp3")
+        transcode(track, to_format, track_out_path)
+
+    transcoded_album = Album.from_dir(out_path)
+    log.info(f"Transcoded album. [{transcoded_album=!r}]")
+
+    return transcoded_album
+
+
+def _transcode_track(track: Track, to_format: TranscodeFormat, out_path: Path) -> Track:
+    """Transcodes a track to a specific format.
+
+    Args:
+        track: Track to transcode. The track will only be transcoded if it is a flac.
+        to_format: Format to transcode to.
+        out_path: Path of the transcoded track. This defaults to the formatted path per
+            the configuration relative to the ``transcode_path`` setting.
+
+    Returns:
+        The transcoded track.
+
+    Raises:
+        ValueError: ``track`` contains a non-supported audio format.
+    """
+    log.debug(f"Transcoding track. [{track=!r}, {to_format=!r}, {out_path=!r}]")
+
+    if not track.audio_format == "flac":
+        raise ValueError(f"Track has unsupported audio format. [{track=!r}]")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path = out_path.with_suffix(".mp3")
 
     args = shlex.split(
-        f"ffmpeg -i '{item.path.resolve()}' "
+        f"ffmpeg -i '{track.path.resolve()}' "
         f"-codec:a libmp3lame {FFMPEG_MP3_ARG[to_format]} '{out_path.resolve()}'"
     )
     subprocess.run(args)
@@ -76,31 +133,3 @@ def transcode(
     log.info(f"Transcoded track. [{transcoded_track=!r}]")
 
     return transcoded_track
-
-
-@transcode.register
-def _(
-    item: Album, to_format: TranscodeFormat, out_path: Optional[Path] = None
-) -> Album:
-    """Transcode an album."""
-    out_path = out_path or fmt_item_path(
-        item, Path(config.CONFIG.settings.transcode.transcode_path)
-    )
-    log.debug(f"Transcoding album. [album={item!r}, {to_format=!r}, {out_path=!r}]")
-
-    for track in item.tracks:
-        if track.audio_format != "flac":
-            raise ValueError(
-                f"Album contains track with unsupported format. [{track=!r}]"
-            )
-
-    out_path.mkdir(parents=True, exist_ok=True)
-
-    for track in item.tracks:
-        track_out_path = out_path / (track.path.stem + ".mp3")
-        transcode(track, to_format, track_out_path)
-
-    transcoded_album = Album.from_dir(out_path)
-    log.info(f"Transcoded album. [{transcoded_album=!r}]")
-
-    return transcoded_album
