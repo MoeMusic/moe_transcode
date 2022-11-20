@@ -1,6 +1,7 @@
 """Transcode music."""
 
 import logging
+import multiprocessing
 import shlex
 import subprocess
 from pathlib import Path
@@ -90,9 +91,13 @@ def _transcode_album(album: Album, to_format: TranscodeFormat, out_path: Path) -
 
     out_path.mkdir(parents=True, exist_ok=True)
 
+    transcode_calls = []
     for track in album.tracks:
         track_out_path = out_path / (track.path.stem + ".mp3")
-        transcode(track, to_format, track_out_path)
+        transcode_calls.append((track, to_format, track_out_path))
+
+    with multiprocessing.Pool() as pool:
+        pool.starmap(_transcode_track, transcode_calls)
 
     transcoded_album = Album.from_dir(out_path)
     log.info(f"Transcoded album. [{transcoded_album=!r}]")
