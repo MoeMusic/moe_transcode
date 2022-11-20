@@ -4,6 +4,15 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v0.1.3 (2022-11-20)
+===================
+
+Bug Fixes
+---------
+* Expand home '~' from config for transcode path (`939b986 <https://github.com/MoeMusic/moe_transcode/commit/939b9867d09d8d41845a7d8262c0eeb7257b886d>`_)
+
+`Full diff <https://github.com/MoeMusic/moe_transcode/compare/v0.1.2...v0.1.3>`__
+
 v0.1.2 (2022-11-12)
 ===================
 
