@@ -1,6 +1,7 @@
 """Transcode music."""
 
 import logging
+import multiprocessing
 import shlex
 import subprocess
 from pathlib import Path
@@ -90,9 +91,18 @@ def _transcode_album(album: Album, to_format: TranscodeFormat, out_path: Path) -
 
     out_path.mkdir(parents=True, exist_ok=True)
 
+    transcode_calls = []
     for track in album.tracks:
         track_out_path = out_path / (track.path.stem + ".mp3")
-        transcode(track, to_format, track_out_path)
+
+        if not track.audio_format == "flac":
+            raise ValueError(f"Track has unsupported audio format. [{track=!r}]")
+
+        log.debug(f"Transcoding track. [{track=!r}, {to_format=!r}, {out_path=!r}]")
+        transcode_calls.append((track.path, to_format, track_out_path))
+
+    with multiprocessing.Pool() as pool:
+        pool.starmap(_transcode_path, transcode_calls)
 
     transcoded_album = Album.from_dir(out_path)
     log.info(f"Transcoded album. [{transcoded_album=!r}]")
@@ -123,13 +133,21 @@ def _transcode_track(track: Track, to_format: TranscodeFormat, out_path: Path) -
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path = out_path.with_suffix(".mp3")
 
-    args = shlex.split(
-        f"ffmpeg -i '{track.path.resolve()}' "
-        f"-codec:a libmp3lame {FFMPEG_MP3_ARG[to_format]} '{out_path.resolve()}'"
-    )
-    subprocess.run(args)
+    _transcode_path(track.path, to_format, out_path)
 
     transcoded_track = Track.from_file(out_path)
     log.info(f"Transcoded track. [{transcoded_track=!r}]")
 
     return transcoded_track
+
+
+def _transcode_path(path: Path, to_format: TranscodeFormat, out_path: Path) -> None:
+    """Transcodes a file to `to_format`.
+
+    This is a separate function in order to support multiprocessing.
+    """
+    args = shlex.split(
+        f"ffmpeg -i '{path.resolve()}' "
+        f"-codec:a libmp3lame {FFMPEG_MP3_ARG[to_format]} '{out_path.resolve()}'"
+    )
+    subprocess.run(args)
