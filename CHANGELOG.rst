@@ -4,6 +4,20 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v1.0.0 (2022-11-21)
+===================
+
+Breaking Changes
+----------------
+API is now considered stable.
+
+New Features
+------------
+* Reduce loglevel to error (`867311d <https://github.com/MoeMusic/moe_transcode/commit/867311d4769a19abcd24bb02d9c263c376ae46e8>`_)
+* Support transcoding in parallel (`910bc7a <https://github.com/MoeMusic/moe_transcode/commit/910bc7a6a45bd3a885a793decb38b07ffa9a02b8>`_)
+
+`Full diff <https://github.com/MoeMusic/moe_transcode/compare/v0.1.3...v1.0.0>`__
+
 v0.1.3 (2022-11-20)
 ===================
 
