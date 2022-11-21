@@ -147,7 +147,7 @@ def _transcode_path(path: Path, to_format: TranscodeFormat, out_path: Path) -> N
     This is a separate function in order to support multiprocessing.
     """
     args = shlex.split(
-        f"ffmpeg -i '{path.resolve()}' "
+        f"ffmpeg -loglevel error -i '{path.resolve()}' "
         f"-codec:a libmp3lame {FFMPEG_MP3_ARG[to_format]} '{out_path.resolve()}'"
     )
     subprocess.run(args)
