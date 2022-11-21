@@ -1,6 +1,5 @@
 """Tests the transcode_core module."""
 
-import multiprocessing
 from pathlib import Path
 
 import pytest
