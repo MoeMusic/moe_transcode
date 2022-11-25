@@ -4,6 +4,15 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v1.0.1 (2022-11-25)
+===================
+
+Bug Fixes
+---------
+* Error when items had quotes in their name (`1d4dae0 <https://github.com/MoeMusic/moe_transcode/commit/1d4dae0a8fce8e27ea2cc2322d53b05f4779728d>`_)
+
+`Full diff <https://github.com/MoeMusic/moe_transcode/compare/v1.0.0...v1.0.1>`__
+
 v1.0.0 (2022-11-21)
 ===================
 
