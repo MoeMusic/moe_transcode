@@ -63,6 +63,14 @@ class TestTranscodeTrack:
 
         assert transcoded_track.path == out_path
 
+    def test_quote_in_title(self):
+        """We should handle the case if there's a single quote in the path."""
+        track = track_factory(title="Jacob's Song", audio_format="flac", exists=True)
+
+        transcoded_track = transcode(track, "mp3 v0")
+
+        assert transcoded_track.audio_format == "mp3"
+
 
 @pytest.mark.usefixtures("_tmp_transcode_config")
 class TestTranscodeAlbum:
