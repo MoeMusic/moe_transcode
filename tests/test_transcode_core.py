@@ -71,6 +71,28 @@ class TestTranscodeTrack:
 
         assert transcoded_track.audio_format == "mp3"
 
+    def test_existing_file_dont_overwrite(self, tmp_path):
+        """If ``overwrite`` is False and the file exists, raise FileExistsError."""
+        existing_mp3 = tmp_path / "exists.mp3"
+        existing_mp3.touch()
+
+        track = track_factory(title="Jacob's Song", audio_format="flac", exists=True)
+
+        with pytest.raises(FileExistsError):
+            transcode(track, "mp3 v0", out_path=existing_mp3)
+
+    def test_existing_file_overwrite(self, tmp_path):
+        """Overwrite existing files if ``overwrite`` is True."""
+        existing_mp3 = tmp_path / "exists.mp3"
+        existing_mp3.touch()
+        track = track_factory(title="Jacob's Song", audio_format="flac", exists=True)
+
+        transcoded_track = transcode(
+            track, "mp3 v0", out_path=existing_mp3, overwrite=True
+        )
+
+        assert transcoded_track.audio_format == "mp3"
+
 
 @pytest.mark.usefixtures("_tmp_transcode_config")
 class TestTranscodeAlbum:
