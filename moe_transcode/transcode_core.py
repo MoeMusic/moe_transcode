@@ -41,7 +41,10 @@ I = TypeVar("I", Album, Track)
 
 
 def transcode(
-    item: I, to_format: TranscodeFormat, out_path: Optional[Path] = None
+    item: I,
+    to_format: TranscodeFormat,
+    out_path: Optional[Path] = None,
+    overwrite: bool = False,
 ) -> I:
     """Transcodes a track or album to a specific format.
 
@@ -51,6 +54,7 @@ def transcode(
         to_format: Format to transcode to.
         out_path: Path of the transcoded item. This defaults to the formatted path per
             the configuration relative to the ``transcode_path`` setting.
+        overwrite: Whether or not to overwrite existing files.
 
     Returns:
         The transcoded track or album.
@@ -62,23 +66,29 @@ def transcode(
     out_path = out_path or fmt_item_path(item, transcode_path)
 
     if isinstance(item, Album):
-        return _transcode_album(item, to_format, out_path)
-    return _transcode_track(item, to_format, out_path)
+        return _transcode_album(item, to_format, out_path, overwrite)
+    return _transcode_track(item, to_format, out_path, overwrite)
 
 
-def _transcode_album(album: Album, to_format: TranscodeFormat, out_path: Path) -> Album:
+def _transcode_album(
+    album: Album, to_format: TranscodeFormat, out_path: Path, overwrite: bool = False
+) -> Album:
     """Transcodes an album to a specific format.
 
     Args:
         album: Album to transcode. Must contain flacs only.
         to_format: Format to transcode to.
         out_path: Path of the transcoded album. This defaults to the formatted path per
-            the configuration relative to the ``transcode_path`` setting.
+            the configuration relative to the ``transcode_path`` setting. Track files
+            within the album will not be renamed except for any file extension changes.
+        overwrite: Whether or not to overwrite existing files.
 
     Returns:
         The transcoded album.
 
     Raises:
+        FileExistsError: If ``overwrite`` is ``False`` and the output path for a track
+            already exists.
         ValueError: ``album`` contains a non-supported audio format.
     """
     log.debug(f"Transcoding album. [{album=!r}, {to_format=!r}, {out_path=!r}]")
@@ -110,7 +120,9 @@ def _transcode_album(album: Album, to_format: TranscodeFormat, out_path: Path) -
     return transcoded_album
 
 
-def _transcode_track(track: Track, to_format: TranscodeFormat, out_path: Path) -> Track:
+def _transcode_track(
+    track: Track, to_format: TranscodeFormat, out_path: Path, overwrite: bool = False
+) -> Track:
     """Transcodes a track to a specific format.
 
     Args:
@@ -118,14 +130,19 @@ def _transcode_track(track: Track, to_format: TranscodeFormat, out_path: Path) -
         to_format: Format to transcode to.
         out_path: Path of the transcoded track. This defaults to the formatted path per
             the configuration relative to the ``transcode_path`` setting.
+        overwrite: Whether or not to overwrite existing files.
 
     Returns:
         The transcoded track.
 
     Raises:
+        FileExistsError: If ``out_path`` already exists and ``overwrite`` is ``False``.
         ValueError: ``track`` contains a non-supported audio format.
     """
     log.debug(f"Transcoding track. [{track=!r}, {to_format=!r}, {out_path=!r}]")
+
+    if out_path.exists() and not overwrite:
+        raise FileExistsError(f"Given output path already exists. [{out_path=}]")
 
     if not track.audio_format == "flac":
         raise ValueError(f"Track has unsupported audio format. [{track=!r}]")
@@ -133,7 +150,7 @@ def _transcode_track(track: Track, to_format: TranscodeFormat, out_path: Path) -
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path = out_path.with_suffix(".mp3")
 
-    _transcode_path(track.path, to_format, out_path)
+    _transcode_path(track.path, to_format, out_path, overwrite)
 
     transcoded_track = Track.from_file(out_path)
     log.info(f"Transcoded track. [{transcoded_track=!r}]")
@@ -141,13 +158,21 @@ def _transcode_track(track: Track, to_format: TranscodeFormat, out_path: Path) -
     return transcoded_track
 
 
-def _transcode_path(path: Path, to_format: TranscodeFormat, out_path: Path) -> None:
+def _transcode_path(
+    path: Path, to_format: TranscodeFormat, out_path: Path, overwrite: bool = False
+) -> None:
     """Transcodes a file to `to_format`.
 
     This is a separate function in order to support multiprocessing.
     """
+    if overwrite:
+        overwrite_arg = "-y"
+    else:
+        overwrite_arg = "-n"
+
     args = [
         "ffmpeg",
+        overwrite_arg,
         "-loglevel",
         "error",
         "-i",
