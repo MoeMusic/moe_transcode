@@ -4,6 +4,15 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v1.1.0 (2022-12-03)
+===================
+
+New Features
+------------
+* Add overwrite argument to overwrite existing files (`5e3839d <https://github.com/MoeMusic/moe_transcode/commit/5e3839df4295b6c80dd6103d7ebe5693847d69b8>`_)
+
+`Full diff <https://github.com/MoeMusic/moe_transcode/compare/v1.0.1...v1.1.0>`__
+
 v1.0.1 (2022-11-25)
 ===================
 
