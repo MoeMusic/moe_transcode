@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 from moe import config
-from moe.plugins.move import fmt_item_path
+from moe.move import fmt_item_path
 
 from moe_transcode import transcode
 from tests.conftest import album_factory, track_factory
