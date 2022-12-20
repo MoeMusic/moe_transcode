@@ -1,4 +1,5 @@
 """Shared pytest configuration."""
+
 import datetime
 import importlib
 import random
@@ -6,17 +7,17 @@ import shutil
 import sys
 import textwrap
 from pathlib import Path
-from typing import Any, Callable, Iterator, Optional
+from typing import Callable, Iterator, Optional
 from unittest.mock import MagicMock
 
+import moe.write
 import pytest
 import sqlalchemy as sa
 import sqlalchemy.exc
 import sqlalchemy.orm
 from moe import config
-from moe.config import Config, ExtraPlugin, MoeSession, session_factory
+from moe.config import Config, ExtraPlugin, moe_sessionmaker
 from moe.library import Album, Extra, Track
-from moe.plugins import write as moe_write
 
 __all__ = ["album_factory", "extra_factory", "track_factory"]
 
@@ -73,9 +74,7 @@ def tmp_config(
     Args:
         settings: Settings string to use. This has the same format as a normal
             ``config.toml`` file.
-        init_db: Whether or not to initialize the database.
-        tmp_db: Whether or not to use a temporary (in-memory) database. If ``True``,
-            the database will be initialized regardless of ``init_db``.
+        tmp_db: Whether or not to use a temporary (in-memory) database.
         extra_plugins: Any additional plugins to enable.
         config_dir: Optionally specifiy a config directory to use.
 
@@ -112,7 +111,7 @@ def tmp_config(
             ExtraPlugin(importlib.import_module("moe_transcode"), "transcode")
         )
 
-        config = Config(
+        return Config(
             config_dir=config_dir,
             settings_filename="config.toml",
             extra_plugins=extra_plugins,
@@ -120,10 +119,8 @@ def tmp_config(
             init_db=init_db,
         )
 
-        return config
-
     yield _tmp_config
-    session_factory.configure(bind=None)  # reset the database in between tests
+    moe_sessionmaker.configure(bind=None)  # reset the database in between tests
 
 
 @pytest.fixture
@@ -137,22 +134,17 @@ def tmp_session(tmp_config) -> Iterator[sqlalchemy.orm.session.Session]:
         The temporary session.
     """
     try:
-        MoeSession().get_bind()
+        moe_sessionmaker().get_bind()
     except sqlalchemy.exc.UnboundExecutionError:
-        MoeSession.remove()
         tmp_config("default_plugins = []", tmp_db=True)
 
-    session = MoeSession()
-    with session.begin():
+    with moe_sessionmaker.begin() as session:
         yield session
-
-    MoeSession.remove()
 
 
 @pytest.fixture(autouse=True)
 def _clean_moe():
-    """Ensure we aren't sharing sessions or configs between tests."""
-    MoeSession.remove()
+    """Ensure we aren't sharing configs between tests."""
     config.CONFIG = MagicMock()
 
 
@@ -161,7 +153,6 @@ def track_factory(
     exists: bool = False,
     dup_track: Optional[Track] = None,
     audio_format: str = "mp3",
-    custom_fields: Optional[dict[str, Any]] = None,
     **kwargs,
 ):
     """Creates a track.
@@ -171,7 +162,6 @@ def track_factory(
         exists: Whether the track should exist on the filesystem. Note, this option
             requires the write plugin.
         dup_track: If given, the new track created will be a duplicate of `dup_track`.
-        custom_fields: Dict of custom_fields to values to assign to the track.
         audio_format: Audio format of the track.
         **kwargs: Any other fields to assign to the Track.
 
@@ -201,11 +191,6 @@ def track_factory(
         **kwargs,
     )
 
-    if custom_fields:
-        for field, value in custom_fields.items():
-            track.custom_fields.add(field)
-            setattr(track, field, value)
-
     if dup_track:
         for field in dup_track.fields:
             value = getattr(dup_track, field)
@@ -221,7 +206,7 @@ def track_factory(
             shutil.copyfile(EMPTY_FLAC_FILE, track.path)
         else:
             shutil.copyfile(EMPTY_MP3_FILE, track.path)
-        moe_write.write_tags(track)
+        moe.write.write_tags(track)
 
     return track
 
@@ -231,7 +216,6 @@ def extra_factory(
     path: Optional[Path] = None,
     exists: bool = False,
     dup_extra: Optional[Extra] = None,
-    custom_fields: Optional[dict[str, Any]] = None,
     **kwargs,
 ) -> Extra:
     """Creates an extra for testing.
@@ -241,7 +225,6 @@ def extra_factory(
         path: Path to assign to the extra. Will create a random path if not given.
         exists: Whether the extra should actually exist on the filesystem.
         dup_extra: If given, the new extra created will be a duplicate of `dup_extra`.
-        custom_fields: Dict of custom_fields to values to assign to the extra.
         **kwargs: Any other fields to assign to the extra.
 
     Returns:
@@ -251,11 +234,6 @@ def extra_factory(
     path = path or album.path / f"{random.randint(1,10000)}.txt"
 
     extra = Extra(album=album, path=path, **kwargs)
-
-    if custom_fields:
-        for field, value in custom_fields.items():
-            extra.custom_fields.add(field)
-            setattr(extra, field, value)
 
     if dup_extra:
         for field in dup_extra.fields:
@@ -279,7 +257,6 @@ def album_factory(
     exists: bool = False,
     dup_album: Optional[Album] = None,
     audio_format: str = "mp3",
-    custom_fields: Optional[dict[str, Any]] = None,
     **kwargs,
 ) -> Album:
     """Creates an album.
@@ -292,7 +269,6 @@ def album_factory(
             requires the write plugin.
         dup_album: If given, the new album created will be a duplicate of `dup_album`.
         audio_format: Audio format of the tracks in the album.
-        custom_fields: Dict of custom_fields to values to assign to the album.
         **kwargs: Any other fields to assign to the album.
 
     Returns:
@@ -314,10 +290,6 @@ def album_factory(
         track_total=num_tracks,
         **kwargs,
     )
-    if custom_fields:
-        for field, value in custom_fields.items():
-            album.custom_fields.add(field)
-            setattr(album, field, value)
 
     if dup_album:
         for field in dup_album.fields:

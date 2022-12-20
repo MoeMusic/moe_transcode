@@ -11,7 +11,7 @@ import dynaconf
 import moe
 from moe import config
 from moe.library import Album, Track
-from moe.plugins.move import fmt_item_path
+from moe.move import fmt_item_path
 
 __all__ = ["I", "TranscodeFormat", "transcode"]
 
