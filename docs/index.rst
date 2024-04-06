@@ -5,6 +5,9 @@ This is a plugin for Moe that provides functionality for transcoding music.
 
 Currently only flac -> mp3 [v0, v2, 320] is supported.
 
+
+TEST PREVIEW
+
 ************
 Installation
 ************
