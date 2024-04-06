@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import Literal, Optional, TypeVar
 
-import dynaconf
+import dynaconf.base
 import moe
 from moe import config
 from moe.library import Album, Track
@@ -36,7 +36,7 @@ def add_config_validator(settings: dynaconf.base.LazySettings):
     )
 
 
-I = TypeVar("I", Album, Track)
+I = TypeVar("I", Album, Track)  # noqa: E741
 """Type hint representing either an Album or a Track."""
 
 
