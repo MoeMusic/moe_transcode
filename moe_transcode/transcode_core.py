@@ -28,7 +28,9 @@ FFMPEG_MP3_ARG = {
 @moe.hookimpl
 def add_config_validator(settings: dynaconf.base.LazySettings):
     """Validate move plugin configuration settings."""
-    settings.validators.register(
+    assert isinstance(settings.library_path, str)
+
+    settings.validators.register(  # type: ignore
         dynaconf.Validator(
             "TRANSCODE.TRANSCODE_PATH",
             default=Path(settings.library_path) / "transcode",
