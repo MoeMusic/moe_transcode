@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: FedericoCarboni/setup-ffmpeg@v3
+      - uses: AnimMouse/setup-ffmpeg@v1
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
@@ -82,7 +82,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: FedericoCarboni/setup-ffmpeg@v3
+      - uses: AnimMouse/setup-ffmpeg@v1
 
       - name: Set up Python
         uses: actions/setup-python@v5
