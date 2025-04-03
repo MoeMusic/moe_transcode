@@ -4,6 +4,18 @@ Changelog
 
 This project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+v1.1.1 (2025-04-03)
+===================
+
+Build Changes
+-------------
+* Support python 3.13 (`1fbbbd8 <https://github.com/MoeMusic/moe_transcode/commit/1fbbbd8b77e7740bf5c9bb7f8e8f8ca0536af2f1>`_)
+* Update dependencies (`b5546de <https://github.com/MoeMusic/moe_transcode/commit/b5546de1aefad66adb83af40f0174f761857aa32>`_)
+* Update dependencies (`c74d182 <https://github.com/MoeMusic/moe_transcode/commit/c74d1821cd6e11527f98f6d8c4490fdc455e5efa>`_)
+* Upgrade moe to 2.0.0 (`38683bb <https://github.com/MoeMusic/moe_transcode/commit/38683bb3f6b2a4d576cc57c8ebd9b0af2defe4ea>`_)
+
+`Full diff <https://github.com/MoeMusic/moe_transcode/compare/v1.1.0...v1.1.1>`__
+
 v1.1.0 (2022-12-03)
 ===================
 
